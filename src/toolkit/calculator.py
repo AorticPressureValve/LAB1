@@ -1,6 +1,7 @@
-import src.toolkit.errors as error
+import toolkit.errors as error
+from decimal import Decimal
 
-alphabet = '1234567890-+/*'
+alphabet = '1234567890-+/*. '
 
 def tokenize_fsm(expression: str):
     tokens = []
@@ -10,7 +11,7 @@ def tokenize_fsm(expression: str):
 
     for char in expression:
         
-        if char in alphabet:
+        if char in alphabet or char.isspace():
 
             if state == 'START':
 
@@ -21,7 +22,7 @@ def tokenize_fsm(expression: str):
                 elif char.isspace():
                     pass
 
-                elif char in '+-*/':
+                elif char in '+-*/' :
                     current_token = char
                     tokens.append(('OPERATOR', str(current_token)))
                     current_token = '' #get operator token
@@ -30,24 +31,31 @@ def tokenize_fsm(expression: str):
             elif state == 'NUMBER': #if number is found
 
                 if char.isdigit() or char == '.':
+                    print('es')
                     current_token += char      #getting whole number if longer than 1 digit
                 
                 else:
-                    tokens.append(('NUMBER', float(current_token)))
+                    tokens.append(('NUMBER', Decimal(current_token)))
                     current_token = ''
                     state = 'START'
-                    if char in '+-*/':
+                    
+                    if char.isspace():
+                        pass
+                    
+                    elif char in '+-*/':
                         current_token = char
                         tokens.append(('OPERATOR', str(current_token)))
                         current_token = ''
+                        state = 'START'
         
         elif len(expression) < 1:
             raise error.NothingError()
+        
         else:
             raise error.NotSupportedCharacter(char)
         
     if state == 'NUMBER': 
-        tokens.append(('NUMBER', float(current_token)))
+        tokens.append(('NUMBER', Decimal(current_token)))
         current_token = ''
         
     return tokens
@@ -56,7 +64,7 @@ tokens = []
 
 
 
-def calc(tokens):
+def calc(tokens: list) -> int:
     tokens = tokenize_fsm(tokens)
     
                 #       CAUTION 
@@ -76,29 +84,39 @@ def calc(tokens):
 
             for i in range(len(current_tokens)):
                 current_definition = current_tokens[i][0]
+                
                 if state == 'START':
+                    
                     if current_definition == 'NUMBER':
                         acc += current_tokens[i][1]
                         state = 'CALC'
+                    
                     elif current_definition == 'OPERATOR':
+                        
                         if current_tokens[i][1] == '-':
                             state = 'NEGATIVE_START'
                             not_used_tokens[i] = (('OPERATOR', 'USED'))
+                        
                         else:
                             raise error.ZeroDisivionError()
                         
                 elif state == 'NEGATIVE_START':
+                    
                     if current_definition == 'NUMBER':
                         acc = current_tokens[i][1] * (-1)
                         not_used_tokens[i] = (('NUMBER', acc))
                         state = 'CALC'
                 
                 elif state == 'CALC':
+                    
                     if current_definition == 'OPERATOR':
+                        
                         if current_tokens[i][1] == '*':
                             state = 'CALC_MULTIPLICATION'
+                        
                         elif current_tokens[i][1] == '/':
                             state = 'CALC_DIVISION'
+                        
                         else:
                             not_used_tokens[i-1] = (('NUMBER', acc))
                             not_used_tokens[i] = (('OPERATOR', current_tokens[i][1]))
@@ -110,13 +128,16 @@ def calc(tokens):
                         exit()
                 
                 elif state == 'CALC_MULTIPLICATION' or state == 'CALC_DIVISION':
+                    
                     if current_definition == 'NUMBER':
+                        
                         if state == 'CALC_DIVISION':
                             acc = acc / current_tokens[i][1] * SIGN_MULTIPLIER
                             not_used_tokens[i] = (('NUMBER', acc))
                             not_used_tokens[i-1] = (('OPERATOR', 'USED'))
                             not_used_tokens[i-2] = (('NUMBER', 'USED'))
                             state = 'CALC'
+                        
                         elif state == 'CALC_MULTIPLICATION':
                             acc = acc * current_tokens[i][1] * SIGN_MULTIPLIER
                             SIGN_MULTIPLIER = 1
@@ -124,6 +145,7 @@ def calc(tokens):
                             not_used_tokens[i-1] = (('OPERATOR', 'USED'))
                             not_used_tokens[i-2] = (('NUMBER', 'USED'))
                             state = 'CALC'
+                    
                     elif current_definition == "OPERATOR" and current_tokens[i][1] == '-':
                         SIGN_MULTIPLIER = -1
                         not_used_tokens[i-2] = (('NUMBER', 'USED'))

@@ -1,4 +1,4 @@
-import src.toolkit.errors as error
+import toolkit.errors as error
 
 from .constants import *
 

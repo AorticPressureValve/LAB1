@@ -1,11 +1,14 @@
 import argparse
 import sys
-
-from src.toolkit.calculator import calc
-from src.toolkit.converter import convert
+from decimal import Decimal
+from toolkit.calculator import calc
+from toolkit.converter import convert
 
 
 def main():
+
+
+    parser = argparse.ArgumentParser(description="калькулятор")
     parser = argparse.ArgumentParser(description="калькулятор")
 
     subparsers = parser.add_subparsers(dest = 'use_module', required=True,  help = 'module')
@@ -15,9 +18,7 @@ def main():
 
     calc_parser = subparsers.add_parser('calc', help = 'use calculator: {calc} {"EXPRESSION"}')
 
-    calc_parser.add_argument('mathematical_expression', type = str, help='calculator format: {"EXPRESSION"}')
-
-
+    calc_parser.add_argument('mathematical_expression', type = str, help = 'calculator format: {"EXPRESSION"}')
 
 
     convert_parser = subparsers.add_parser('convert', help = 'use converter: {conver} {VALUE} {--from} {UNIT} {--to} {UNIT}')
@@ -34,18 +35,20 @@ def main():
     try:
         if args.use_module == 'calc':
             result = calc(args.mathematical_expression)
-            sys.stdout.write(str(result) + "\n")
+            dec_result = Decimal(str(result)).normalize()
+            sys.stdout.write(f"{dec_result:f}\n")
 
             return 0
             
         elif args.use_module == 'convert':
             result = convert(args.value, args.fromunit, args.tounit)
-            sys.stdout.write(str(result) + "\n")
+            dec_result = Decimal(str(result)).normalize()
+            sys.stdout.write(f"{dec_result:f}\n")
 
             return 0
             
     except ValueError as e:
-        sys.stderr.write(f'ошибка: {e}\n')
+        sys.stderr.write(f'error: {e}\n')
         
         return 2
 
