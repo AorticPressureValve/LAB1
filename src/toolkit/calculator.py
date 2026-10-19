@@ -15,7 +15,7 @@ def tokenize_fsm(expression: str):
 
             if state == 'START':
 
-                if char.isdigit():
+                if char.isdigit() or char == '.':
                     state = 'NUMBER' # finding numbers
                     current_token = char
 
@@ -31,7 +31,6 @@ def tokenize_fsm(expression: str):
             elif state == 'NUMBER': #if number is found
 
                 if char.isdigit() or char == '.':
-                    print('es')
                     current_token += char      #getting whole number if longer than 1 digit
                 
                 else:
@@ -123,10 +122,7 @@ def calc(tokens: list) -> int:
                             acc = 0
                             state = 'START'
                     else:
-                        state = 'error'
-                        error = 'no operator'
-                        exit()
-                
+                        pass
                 elif state == 'CALC_MULTIPLICATION' or state == 'CALC_DIVISION':
                     
                     if current_definition == 'NUMBER':
@@ -183,4 +179,8 @@ def calc(tokens: list) -> int:
                         acc = acc + (current_tokens[i][1] * SIGN_MULTIPLIER)
 
             programm = 'FINISHED'
+
+    if current_tokens[-1][0] == 'OPERATOR':
+        raise ValueError("syntax error: not completed expression")
+    
     return acc

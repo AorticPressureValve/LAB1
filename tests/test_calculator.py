@@ -15,7 +15,7 @@ def test_floating_point():
     assert calc("2.5*4-1.5/0.5") == 7.0
 
 def test_division_precision():
-    assert calc("10/3+2") == pytest.approx(5.3333333)
+    assert float(calc("10/3+2")) == pytest.approx(5.3333333)
 
 def test_large_numbers():
     assert calc("100000000000*100000000000-1") == 9999999999999999999999
@@ -51,4 +51,4 @@ def test_fractial_chain():
     assert calc("1/2/2/2") == 0.125
 
 def test_single_negative_number():
-    assert calc("-99.9") == -99.9
+    assert float(calc("-99.9")) == -99.9
